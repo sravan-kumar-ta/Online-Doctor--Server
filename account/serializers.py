@@ -1,5 +1,7 @@
 from rest_framework import serializers
+from rest_framework.exceptions import AuthenticationFailed
 
+from .customAuth import CustomAuth
 from .models import CustomUser
 
 
@@ -11,6 +13,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = ['username', 'first_name', 'last_name', 'full_name',
                   'email', 'gender', 'role', 'password', 'password2']
+        extra_kwargs = {'password': {'write_only': True}}
 
     def validate(self, data):
         password = data.get('password')
@@ -27,3 +30,32 @@ class CustomUserSerializer(serializers.ModelSerializer):
         user.set_password(password)
         user.save()
         return user
+
+
+class LoginSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(style={'input_type': 'password'}, write_only=True)
+
+    class Meta:
+        model = CustomUser
+        fields = ['role', 'username', 'get_full_name', 'email', 'password', 'tokens']
+        read_only_fields = ['username', 'role']
+        extra_kwargs = {
+            'password': {'write_only': True},
+        }
+
+    def validate(self, attrs):
+        email = attrs.get('email', '')
+        password = attrs.get('password', '')
+        user = CustomAuth.authenticate(username=email, password=password)
+
+        if not user:
+            raise AuthenticationFailed('Invalid credentials, try again')
+
+        return {
+            'role': user.role,
+            'email': user.email,
+            'tokens': user.tokens,
+            'username': user.username,
+            'get_full_name': user.get_full_name,
+        }
