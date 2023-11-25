@@ -33,16 +33,14 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
 
 class LoginSerializer(serializers.ModelSerializer):
-    email = serializers.EmailField()
+    email = serializers.CharField()  # Username can be email or username
     password = serializers.CharField(style={'input_type': 'password'}, write_only=True)
 
     class Meta:
         model = CustomUser
         fields = ['role', 'username', 'get_full_name', 'email', 'password', 'tokens']
-        read_only_fields = ['username', 'role']
-        extra_kwargs = {
-            'password': {'write_only': True},
-        }
+        read_only_fields = ['username', 'role']  # username & role aren't required in the input data
+        extra_kwargs = {'password': {'write_only': True}}  # To avoid returning the password
 
     def validate(self, attrs):
         email = attrs.get('email', '')
