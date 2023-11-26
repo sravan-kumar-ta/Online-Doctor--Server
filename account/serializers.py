@@ -77,3 +77,31 @@ class LogoutSerializer(serializers.Serializer):
             RefreshToken(self.token).blacklist()
         except TokenError:
             self.fail('bad_token')
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'first_name', 'last_name', 'get_full_name', 'username', 'email', 'role', 'gender']
+
+    def validate(self, attrs):
+        current_user = self.context.get('user')
+        email = attrs.get('email')
+        username = attrs.get('username')
+
+        if CustomUser.objects.exclude(id=current_user.id).filter(email=email).exists():
+            raise serializers.ValidationError({'email': "Email already taken"})
+
+        if CustomUser.objects.exclude(id=current_user.id).filter(username=username).exists():
+            raise serializers.ValidationError({'username': "Username already taken"})
+
+        return attrs
+
+
+class ChangePasswordSerializer(serializers.ModelSerializer):
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)
+
+    class Meta:
+        model = CustomUser
+        fields = ['old_password', 'new_password']
