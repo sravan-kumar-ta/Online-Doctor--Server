@@ -25,6 +25,7 @@ class PostViewSet(ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         if request.user.role == 'doctor':
+            print(request.data)
             serializer = self.serializer_class(data=request.data, context={'user': request.user})
             if serializer.is_valid():
                 serializer.save()

@@ -5,17 +5,16 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from account.serializers import CustomUserSerializer, LoginSerializer, LogoutSerializer, UserSerializer, \
-    ChangePasswordSerializer
+from account import serializers
 
 
 class CreateUserView(CreateAPIView):
     model = get_user_model()
-    serializer_class = CustomUserSerializer
+    serializer_class = serializers.CustomUserSerializer
 
 
 class LoginAPIView(GenericAPIView):
-    serializer_class = LoginSerializer
+    serializer_class = serializers.LoginSerializer
 
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
@@ -24,7 +23,7 @@ class LoginAPIView(GenericAPIView):
 
 
 class LogoutAPIView(GenericAPIView):
-    serializer_class = LogoutSerializer
+    serializer_class = serializers.LogoutSerializer
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
@@ -37,7 +36,7 @@ class LogoutAPIView(GenericAPIView):
 
 class UserAPIView(APIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = UserSerializer
+    serializer_class = serializers.UserSerializer
 
     def get(self, request, *args, **kwargs):
         user = self.request.user
@@ -63,7 +62,7 @@ class ChangePasswordAPIView(APIView):
     permission_classes = (IsAuthenticated, )
 
     def post(self, request):
-        serializer = ChangePasswordSerializer(data=request.data)
+        serializer = serializers.ChangePasswordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         user = request.user

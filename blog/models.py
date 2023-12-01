@@ -9,7 +9,7 @@ class Posts(models.Model):
     content = models.TextField()
     date = models.DateField(auto_now_add=True)
     image = models.ImageField(upload_to='user_uploads/blogs', default='../static/img/blog.jpg')
-    is_public = models.BooleanField(default=True)
+    is_public = models.BooleanField(default=False)
     likes = models.ManyToManyField(CustomUser, related_name='blog_post')
 
     def __str__(self):

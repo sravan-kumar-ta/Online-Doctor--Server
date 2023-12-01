@@ -11,3 +11,11 @@ urlpatterns = [
     path('user/', views.UserAPIView.as_view()),
     path('change-password/', views.ChangePasswordAPIView.as_view()),
 ]
+
+# (POST) user/login/ => login with email and password to get token
+# (POST) user/register/ => create user
+# (GET) user/user/ => get user
+# (PATCH) user/user/ => update user
+# (PUT) user/change_password/ => change password
+# (POST) user/token/refresh/ => refresh token
+# (POST) user/logout/ => logout
