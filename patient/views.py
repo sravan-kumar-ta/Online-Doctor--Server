@@ -98,7 +98,6 @@ class CreateAppointmentView(generics.CreateAPIView):
 
 class FilterAppointmentView(APIView):
     permission_classes = [IsAuthenticated, IsPatient]
-    serializer_class = serializers.AvailableTimeSerializer
 
     def get(self, request, *args, **kwargs):
         now = datetime.now()
@@ -116,6 +115,6 @@ class FilterAppointmentView(APIView):
         else:
             return Response({'error': 'Invalid status parameter'}, status=406)
 
-        appointments = Appointments.objects.filter(query)
+        appointments = Appointments.objects.filter(patient=request.user.id).filter(query)
         serializer = serializers.AppointmentSerializer(appointments, many=True)
         return Response(data=serializer.data)

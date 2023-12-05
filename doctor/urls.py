@@ -1,10 +1,11 @@
 from django.urls import path
 
-from doctor.views import SpecialitiesView, DoctorDetailsView
+from doctor.views import SpecialitiesView, DoctorDetailsView, FilterAppointmentView
 
 urlpatterns = [
     path('specialities/', SpecialitiesView.as_view()),
     path('doctor/', DoctorDetailsView.as_view()),
+    path('filter-appointment/', FilterAppointmentView.as_view()),
 ]
 
 # (GET) doctor/specialities/ => get all specialities

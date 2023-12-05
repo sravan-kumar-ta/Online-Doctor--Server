@@ -1,24 +1,24 @@
+from datetime import datetime
+
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.generics import ListAPIView
-from rest_framework.permissions import IsAuthenticated, BasePermission
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from doctor.models import Specialities, Doctors
+from doctor.permissions import IsDoctor
 from doctor.serializers import SpecialitiesSerializer, DoctorSerializer
+from patient.models import Appointments
+from patient.serializers import AppointmentSerializer
 
 
 class SpecialitiesView(ListAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = SpecialitiesSerializer
     queryset = Specialities.objects.all()
-
-
-class IsDoctor(BasePermission):
-    def has_permission(self, request, view):
-        # Check if the user's role is 'doctor'
-        return request.user.role == 'doctor'
 
 
 class DoctorDetailsView(APIView):
@@ -64,3 +64,28 @@ class DoctorDetailsView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
+class FilterAppointmentView(APIView):
+    permission_classes = [IsAuthenticated, IsDoctor]
+
+    def get(self, request, *args, **kwargs):
+        now = datetime.now()
+
+        # Get the filtering parameter from the request (completed, active, upcoming)
+        status = request.query_params.get('status', None)
+
+        # Set up the query for filtering
+        if status == 'completed':
+            query = Q(date_time_end__lt=now)
+        elif status == 'active':
+            query = Q(date_time_start__lte=now, date_time_end__gt=now)
+        elif status == 'upcoming':
+            query = Q(date_time_start__gt=now)
+        else:
+            return Response({'error': 'Invalid status parameter'}, status=406)
+
+        doctor = get_object_or_404(Doctors, details=request.user.id)
+        appointments = Appointments.objects.filter(doctor=doctor.id).filter(query)
+        serializer = AppointmentSerializer(appointments, many=True)
+        return Response(data=serializer.data)
