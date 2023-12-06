@@ -47,6 +47,10 @@ class LoginSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         email = attrs.get('email', '')
         password = attrs.get('password', '')
+
+        if CustomUser.objects.filter(email=email, auth_provider='google').exists():
+            raise AuthenticationFailed('You can log in directly with Google authentication with this mailID.')
+
         user = CustomAuth.authenticate(username=email, password=password)
 
         if not user:

@@ -17,6 +17,7 @@ class CustomUser(AbstractUser):
     email = models.EmailField(_("email address"), unique=True)
     role = models.CharField(choices=role_options, default="admin", max_length=30)
     gender = models.CharField(choices=gender_options, max_length=20)
+    auth_provider = models.CharField(max_length=20, default='email_password')
 
     def tokens(self):
         refresh = RefreshToken.for_user(self)

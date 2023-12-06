@@ -1,11 +1,13 @@
 from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
 from rest_framework import status
-from rest_framework.generics import CreateAPIView, GenericAPIView
+from rest_framework.generics import CreateAPIView, GenericAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from account import serializers
+from account.models import CustomUser
 
 
 class CreateUserView(CreateAPIView):
@@ -59,7 +61,7 @@ class UserAPIView(APIView):
 
 
 class ChangePasswordAPIView(APIView):
-    permission_classes = (IsAuthenticated, )
+    permission_classes = (IsAuthenticated,)
 
     def post(self, request):
         serializer = serializers.ChangePasswordSerializer(data=request.data)
@@ -76,3 +78,14 @@ class ChangePasswordAPIView(APIView):
         user.save()
 
         return Response({'detail': 'Password changed successfully'}, status=status.HTTP_200_OK)
+
+
+class GetUserAPIView(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = serializers.UserSerializer
+    queryset = CustomUser.objects.all()
+
+    def retrieve(self, request, *args, **kwargs):
+        user = get_object_or_404(self.get_queryset(), id=kwargs['id'])
+        serializer = self.get_serializer(user)
+        return Response(serializer.data)
